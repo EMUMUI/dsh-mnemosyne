@@ -1,0 +1,58 @@
+# Mnemosyne — a DSH bundle layer.
+#
+# Every key below is optional; `src/config.js` owns the defaults and the
+# validation, so a bare install works out of the box. Uncomment a line only
+# when you want to change it. Patch layers replace a row's whole `config`, so
+# restate every key you override.
+- insert:
+    - id: mnemosyne
+      name: 'dsh-mnemosyne'
+      config:
+        # ── Where memory lives ──────────────────────────────────────────
+        # Default: ~/.dsh/mnemosyne/<profile>.json. Point this at any
+        # absolute path to keep several brains side by side.
+        # memoryFile: 'D:/brains/work.json'
+        # baseDir: 'D:/brains'
+        # profile: 'work'
+
+        # ── Learning ───────────────────────────────────────────────────
+        # autoLearn: true            # learn from every turn automatically
+        # learnAssistant: false      # also mine the assistant's replies
+        # minTurnChars: 4            # ignore one-word acknowledgements
+        # captureCommandTurns: false # treat "/cmd" turns as learnable text
+        # selfTuneEveryTurns: 25     # retune the decay model this often
+        # consolidateEveryTurns: 1   # how often to attempt a "sleep" cycle
+        # autoConsolidateMinNewTurns: 10
+        # idleFlushMs: 20000         # idle-save debounce
+
+        # ── What gets injected before each turn ────────────────────────
+        # workingSetMaxChars: 2200
+        # maxProfileEntries: 12      # standing preferences always carried
+        # recallMaxItems: 4          # relevant memories per turn
+        # recallMinScore: 2.6        # relevance gate (self-tuned upwards)
+        # recallMinQueryChars: 4
+        # injectRecentActivity: true
+        # include:
+        #   preferences: true
+        #   memories: true
+        #   commands: true
+        #   recent: true
+
+        # ── Forgetting ─────────────────────────────────────────────────
+        # halfLifeDays: 21           # 0 = never forget
+        # salienceFloor: 0.05        # below this a memory is forgotten
+        # maxEpisodic: 500
+        # keepForgottenDays: 180     # then the record itself is dropped
+
+        # ── Privacy ────────────────────────────────────────────────────
+        # User turn text is never persisted verbatim: memories keep a short
+        # excerpt. 'excerpt-free' stores a compacted one-liner instead.
+        # privacyMode: 'excerpt'     # 'excerpt' | 'excerpt-free' | 'full'
+        # excerptChars: 160
+        # redactSecrets: true        # strip tokens/keys before storing
+
+        # ── Scope ──────────────────────────────────────────────────────
+        # perProjectPreferences: false
+
+        # ── Diagnostics (stderr only) ──────────────────────────────────
+        # debug: false

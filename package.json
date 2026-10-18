@@ -1,0 +1,55 @@
+{
+  "name": "dsh-mnemosyne",
+  "version": "0.1.0",
+  "description": "Mnemosyne for DeepSeek Harness — biological-style memory for your agent: learning from every conversation, human-like forgetting, importance filtering, and self-tuning preferences that make DSH fit you better the longer you use it.",
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "memory",
+    "long-term-memory",
+    "forgetting-curve",
+    "mnemosyne",
+    "personalization"
+  ],
+  "homepage": "https://github.com/EMUMUI/dsh-mnemosyne#readme",
+  "bugs": {
+    "url": "https://github.com/EMUMUI/dsh-mnemosyne/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EMUMUI/dsh-mnemosyne.git"
+  },
+  "license": "MIT",
+  "author": "EMUMUI",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": {
+      "default": "./index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.js",
+    "src/",
+    "lib/",
+    "vendor/",
+    "cordis.patch.yml",
+    "README.md",
+    "README.zh.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": "^22.19.0 || >=24.0.0"
+  },
+  "scripts": {
+    "test": "node --test \"tests/**/*.test.js\"",
+    "demo": "node scripts/demo.mjs"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}

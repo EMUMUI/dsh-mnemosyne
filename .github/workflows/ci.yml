@@ -1,0 +1,36 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node: [22, 24]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Unit tests
+        run: node --test "tests/**/*.test.js"
+      - name: Demo (exercises the whole memory model end to end)
+        run: node scripts/demo.mjs
+      - name: Verify the bundle patch is valid YAML and points at an existing entry
+        run: node --input-type=module -e "
+          import fs from 'node:fs';
+          const text = fs.readFileSync('cordis.patch.yml', 'utf8');
+          if (!text.includes('- insert:')) throw new Error('patch must insert a row');
+          if (!text.includes('name: dsh-mnemosyne')) throw new Error('row must name the package');
+          const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+          if (pkg.dsh?.bundle?.patch !== './cordis.patch.yml') throw new Error('package.json must declare the bundle patch');
+          if (!fs.existsSync(pkg.main)) throw new Error('main entry missing: ' + pkg.main);
+          console.log('bundle metadata ok');
+          "
