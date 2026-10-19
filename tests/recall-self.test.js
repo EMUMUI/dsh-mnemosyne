@@ -131,7 +131,7 @@ test('health reports an empty brain honestly', () => {
   const report = health(brain.store)
   assert.equal(report.items, 0)
   assert.equal(report.forgotten, 0)
-  assert.ok(report.advice.some(line => line.includes('empty')))
+  assert.ok(report.advice.some(line => line.includes('记忆还是空的')))
   brain.remember({ content: '有内容的记忆', kind: 'fact', force: true })
   const second = health(brain.store)
   assert.equal(second.items, 1)

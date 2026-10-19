@@ -25,7 +25,7 @@ const brain = createBrain({
 })
 
 const line = (char = '─') => console.log(char.repeat(72))
-const day = () => `day ${Math.round((now - Date.UTC(2026, 0, 1)) / DAY) + 1}`
+const day = () => `第 ${Math.round((now - Date.UTC(2026, 0, 1)) / DAY) + 1} 天`
 const heading = text => { console.log(); line(); console.log(text); line() }
 const advance = days => { now += days * DAY }
 
@@ -43,23 +43,23 @@ function turn(user, { assistant = '', toolCalls = [], ok = true } = {}) {
     injected: [],
   })
   const after = brain.store.items('all').length
-  console.log(`\n[${day()}] user: ${user}`)
+  console.log(`\n[${day()}] 用户：${user}`)
   if (learned.learned.length > 0 || learned.preference !== null) {
-    console.log(`  → learned ${learned.learned.length + (learned.preference ? 1 : 0)} item(s), store ${before} → ${after}`)
+    console.log(`  → 学到 ${learned.learned.length + (learned.preference ? 1 : 0)} 条，记忆中现有 ${before} → ${after}`)
   } else {
-    console.log('  → nothing worth remembering (selection filtered it out)')
+    console.log('  → 没有值得记的内容（被筛选掉了）')
   }
 }
 
 function showWorkingSet(query) {
   const set = brain.workingSet({ query, project: '' })
-  if (set.text === '') return console.log('  (nothing injected: no relevant memory yet)')
-  console.log('  injected for the next turn:')
+  if (set.text === '') return console.log('  （不注入：还没有相关记忆）')
+  console.log('  下一轮会注入：')
   for (const entry of set.citations) console.log(`    · ${entry.store.padEnd(8)} ${entry.title}`)
 }
 
 // ── Act 1: the agent learns who it is working with ──────────────────────────
-heading('Act 1 — learning (turn 1–5)')
+heading('第一幕 · 学习（第 1–5 轮）')
 showWorkingSet('帮我看看这个项目的结构')
 turn('以后所有回复都用中文，简洁一点。我们的项目叫 shop，用 pnpm 管理依赖。')
 turn('记住：部署脚本在 scripts/deploy.ps1，服务器是 Windows。')
@@ -69,18 +69,18 @@ turn('安装依赖，然后跑一下构建。', { toolCalls: [{ name: 'bash', ar
 showWorkingSet('帮我安装依赖并构建')
 
 // ── Act 2: time passes, unimportant things fade ─────────────────────────────
-heading('Act 2 — forgetting (day 6 → day 40)')
+heading('第二幕 · 遗忘（第 6 → 40 天）')
 advance(34)
 const report = brain.consolidate()
-console.log(`  consolidation: ${report.forgotten.length} forgotten, digest ${report.digest ?? 'none'}`)
+console.log(`  整合完成：遗忘 ${report.forgotten.length} 条，摘要 ${report.digest ?? '（无）'}`)
 for (const item of brain.store.items('all')) {
   const health = brain.recall({ query: item.title, limit: 1 })[0]
-  console.log(`    · ${item.store.padEnd(8)} ${item.title.slice(0, 40).padEnd(42)} strength ${item.strength.toFixed(3)}${health ? '' : '  (faded)'}`)
+  console.log(`    · ${item.store.padEnd(8)} ${item.title.slice(0, 40).padEnd(42)} 强度 ${item.strength.toFixed(3)}${health ? '' : '  （已淡忘）'}`)
 }
 showWorkingSet('部署脚本在哪')
 
 // ── Act 3: reinforcement and the closed loop ────────────────────────────────
-heading('Act 3 — reinforcement and self-tuning (day 41 → day 90)')
+heading('第三幕 · 复述加固与自我调参（第 41 → 90 天）')
 for (let index = 0; index < 12; index += 1) {
   advance(3)
   const query = index % 3 === 0 ? '部署脚本在哪' : index % 3 === 1 ? '数据库文件在哪' : '安装依赖'
@@ -89,15 +89,15 @@ for (let index = 0; index < 12; index += 1) {
 }
 brain.selfTune()
 const health = brain.health()
-console.log(`  behaviour fit: ${health.behaviorFit} over ${health.observations} observations`)
-console.log(`  self-tuned: half-life ${health.tuning.halfLifeDays}d, recall gate ${health.tuning.recallThreshold}`)
+console.log(`  契合度：${health.behaviorFit}（基于 ${health.observations} 次观测）`)
+console.log(`  自我调参：半衰期 ${health.tuning.halfLifeDays} 天，召回门槛 ${health.tuning.recallThreshold}`)
 for (const advice of health.advice) console.log(`  · ${advice}`)
 
 // ── Act 4: what survives ────────────────────────────────────────────────────
-heading('Act 4 — the profile that survives')
+heading('第四幕 · 留下来的画像')
 const profile = brain.workingSet({ query: '帮我继续这个项目', project: '' })
-console.log(profile.text || '  (empty)')
+console.log(profile.text || '  （空）')
 line()
-console.log(`Store: ${brain.store.filePath}`)
-console.log(`Items: ${brain.store.items('all').length} active, ${brain.store.items('all', { includeForgotten: true }).length} on record`)
+console.log(`记忆文件：${brain.store.filePath}`)
+console.log(`条目：${brain.store.items('all').length} 条活跃，共 ${brain.store.items('all', { includeForgotten: true }).length} 条留档`)
 fs.rmSync(dir, { recursive: true, force: true })

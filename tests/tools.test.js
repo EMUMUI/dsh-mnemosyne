@@ -113,7 +113,7 @@ test('tools: commands tool matches a learned goal', async () => {
 test('tools: invalid arguments fail loudly', async () => {
   const { brain } = createBrainAt()
   const map = tools(brain)
-  await assert.rejects(() => run(map.get('mnemosyne_remember'), { content: '   ' }), /non-empty/)
-  await assert.rejects(() => run(map.get('mnemosyne_recall'), { query: '' }), /non-empty/)
-  await assert.rejects(() => run(map.get('mnemosyne_remember'), { content: 'x', store: 'nope' }), /store must be/)
+  await assert.rejects(() => run(map.get('mnemosyne_remember'), { content: '   ' }), /不能为空/)
+  await assert.rejects(() => run(map.get('mnemosyne_recall'), { query: '' }), /不能为空/)
+  await assert.rejects(() => run(map.get('mnemosyne_remember'), { content: 'x', store: 'nope' }), /store 必须是/)
 })

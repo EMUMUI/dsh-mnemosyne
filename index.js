@@ -70,13 +70,16 @@ export function profileOf(ctx) {
  * @param {import('@deepseek-ai/cordis').Context} ctx - the Loader fiber context.
  * @param {object} [rawConfig] - the row's config from cordis.patch.yml.
  */
-export function apply(ctx, rawConfig = {}) {
+export function apply(ctx, rawConfig) {
+  // The Loader passes `null` (not `undefined`) for a row whose patch config is
+  // absent, so a default parameter would not protect this call.
+  const given = rawConfig ?? {}
   const profile = profileOf(ctx)
   // One host per brain file per process: a second mount (profile listed twice,
   // hot reload before the old fiber finishes) resumes from the live brain
   // instead of an empty one and takes over its writer.
   const registry = (globalThis[REGISTRY] ??= new Map())
-  const config = normalizeConfig({ ...rawConfig, profile: rawConfig.profile || profile })
+  const config = normalizeConfig({ ...given, profile: given.profile || profile })
   const memoryFile = resolveMemoryFile(config, { profile })
   const log = message => console.error(`[mnemosyne] ${message}`)
   const warn = message => console.error(`[mnemosyne] ${message}`)

@@ -1,7 +1,7 @@
 {
   "name": "dsh-mnemosyne",
   "version": "0.1.0",
-  "description": "Mnemosyne for DeepSeek Harness — biological-style memory for your agent: learning from every conversation, human-like forgetting, importance filtering, and self-tuning preferences that make DSH fit you better the longer you use it.",
+  "description": "Mnemosyne · 为 DSH 装上类人长期记忆：从每次对话中学习，像人一样遗忘，按重要性筛选，并随着使用自我调优、越来越贴合你。",
   "keywords": [
     "dsh",
     "dsh-plugin",

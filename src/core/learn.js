@@ -194,7 +194,7 @@ export function learnFromTurn(store, turn, config) {
     if (TOOL_NOISE.test(command)) continue
     store.remember('commands', {
       content: command,
-      title: `Run: ${oneLine(command, 60)}`,
+      title: `命令：${oneLine(command, 60)}`,
       key: subjectOf(userText),
       tags: ['command', call.name],
       source: 'tool-success',

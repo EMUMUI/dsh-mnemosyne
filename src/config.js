@@ -66,20 +66,24 @@ const PRIVACY_MODES = new Set(['excerpt', 'excerpt-free', 'full'])
 
 /**
  * Validate a raw config object and fill defaults.
- * @param {object} raw - the Loader row's `config`.
+ *
+ * The Loader passes `null` for a patch row with no `config:` key, so `null` and
+ * `undefined` both mean "use every default" rather than a user error.
+ * @param {object|null|undefined} raw - the Loader row's `config`.
  * @returns {object} the normalised config.
  * @throws {TypeError} on an unknown key, wrong type, or out-of-range value.
  */
-export function normalizeConfig(raw = {}) {
-  if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) {
+export function normalizeConfig(raw) {
+  const config = raw ?? {}
+  if (typeof config !== 'object' || Array.isArray(config)) {
     throw new TypeError('mnemosyne: config must be an object')
   }
   const known = new Set([...Object.keys(DEFAULTS), 'include'])
-  for (const key of Object.keys(raw)) {
+  for (const key of Object.keys(config)) {
     if (!known.has(key)) throw new TypeError(`mnemosyne: unknown config key "${key}"`)
   }
-  const cfg = { ...DEFAULTS, ...raw }
-  cfg.include = { ...DEFAULTS.include, ...(typeof raw.include === 'object' && raw.include !== null ? raw.include : {}) }
+  const cfg = { ...DEFAULTS, ...config }
+  cfg.include = { ...DEFAULTS.include, ...(typeof config.include === 'object' && config.include !== null ? config.include : {}) }
 
   for (const key of BOOLEAN_FIELDS) {
     if (typeof cfg[key] !== 'boolean') throw new TypeError(`mnemosyne: config.${key} must be a boolean`)

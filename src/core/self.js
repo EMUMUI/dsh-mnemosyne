@@ -148,29 +148,29 @@ export function selfTune(store, options = {}) {
     if (tuning.behaviorFit < 0.35) {
       const next = Math.min(max, round(tuning.recallThreshold + STEPS.recallThreshold))
       if (next !== tuning.recallThreshold) {
-        changes.push(`recallThreshold ${tuning.recallThreshold} → ${next} (behaviour fit ${tuning.behaviorFit} is low)`)
+        changes.push(`recallThreshold ${tuning.recallThreshold} → ${next} （契合度 ${tuning.behaviorFit} 偏低，收紧召回）`)
         tuning.recallThreshold = next
       }
     } else if (tuning.behaviorFit > 0.75) {
       const next = Math.max(min, round(tuning.recallThreshold - STEPS.recallThreshold))
       if (next !== tuning.recallThreshold) {
-        changes.push(`recallThreshold ${tuning.recallThreshold} → ${next} (behaviour fit ${tuning.behaviorFit} is high)`)
+        changes.push(`recallThreshold ${tuning.recallThreshold} → ${next} （契合度 ${tuning.behaviorFit} 偏高，放宽召回）`)
         tuning.recallThreshold = next
       }
     }
   } else {
-    advice.push(`behaviour evidence: ${tuning.observations}/${MIN_OBSERVATIONS} turns; thresholds stay conservative`)
+    advice.push(`行为证据还不足：${tuning.observations}/${MIN_OBSERVATIONS} 轮，阈值暂保持保守`)
   }
 
   if (summary.items >= minItems) {
     if (summary.forgottenRate > 0.4 && summary.reuseRate < 0.3) {
       const next = Math.min(BOUNDS.halfLifeDays[1], round(tuning.halfLifeDays * STEPS.halfLifeDaysMul))
-      changes.push(`halfLifeDays ${tuning.halfLifeDays} → ${next} (forgetting ${Math.round(summary.forgottenRate * 100)}% while reuse is low)`)
+      changes.push(`halfLifeDays ${tuning.halfLifeDays} → ${next} （遗忘率 ${Math.round(summary.forgottenRate * 100)}% 而复用率偏低，放慢遗忘）`)
       tuning.halfLifeDays = next
     } else if (summary.forgottenRate > 0.4 && summary.reuseRate >= 0.3) {
       const next = Math.min(BOUNDS.salienceFloor[1], round(tuning.salienceFloor + 0.01))
       if (next !== tuning.salienceFloor) {
-        changes.push(`salienceFloor ${tuning.salienceFloor} → ${next} (busy brain: forget weak memories sooner)`)
+        changes.push(`salienceFloor ${tuning.salienceFloor} → ${next} （记忆太满：让弱的更早淡出）`)
         tuning.salienceFloor = next
       }
     }
@@ -178,32 +178,32 @@ export function selfTune(store, options = {}) {
       const next = Math.max(BOUNDS.salienceFloor[0], DEFAULT_FLOOR)
       const raised = Math.min(BOUNDS.salienceFloor[1], round(next * 1.5))
       if (raised !== tuning.salienceFloor) {
-        changes.push(`salienceFloor ${tuning.salienceFloor} → ${raised} (nothing has been forgotten yet)`)
+        changes.push(`salienceFloor ${tuning.salienceFloor} → ${raised} （至今什么都没忘，提高遗忘门槛）`)
         tuning.salienceFloor = raised
       }
     }
     if (summary.reuseRate > 0.4) {
       const next = Math.min(BOUNDS.reinforceGainMul[1], round(tuning.reinforceGainMul + STEPS.reinforceGainMul))
       if (next !== tuning.reinforceGainMul) {
-        changes.push(`reinforceGainMul ${tuning.reinforceGainMul} → ${next} (memories are being reused)`)
+        changes.push(`reinforceGainMul ${tuning.reinforceGainMul} → ${next} （记忆正在被复用，加固更有效）`)
         tuning.reinforceGainMul = next
       }
       const inject = Math.min(BOUNDS.learnedInject[1], round((tuning.learnedInject ?? 1) + 0.05))
       if (inject !== tuning.learnedInject) {
-        changes.push(`learnedInject ${tuning.learnedInject} → ${inject} (learned items prove useful)`)
+        changes.push(`learnedInject ${tuning.learnedInject} → ${inject} （学到的内容确实有用，多注入一些）`)
         tuning.learnedInject = inject
       }
     } else if (summary.reuseRate < 0.1 && summary.items > minItems) {
       const inject = Math.max(BOUNDS.learnedInject[0], round((tuning.learnedInject ?? 1) - 0.05))
       if (inject !== tuning.learnedInject) {
-        changes.push(`learnedInject ${tuning.learnedInject} → ${inject} (learned items are rarely reused)`)
+        changes.push(`learnedInject ${tuning.learnedInject} → ${inject} （学到的内容很少被复用，少注入一些）`)
         tuning.learnedInject = inject
       }
     }
   }
 
   const pinned = store.items('all').filter(item => item.pinned).length
-  if (pinned > 200) advice.push(`${pinned} pinned items: pinning everything defeats forgetting; unpin the ones that no longer matter`)
+  if (pinned > 200) advice.push(`已固定 ${pinned} 条：什么都固定就等于不会遗忘，把不再重要的取消固定`)
 
   tuning.behaviorFit = round(clamp01(tuning.behaviorFit))
   tuning.lastSelfTuneAt = now
@@ -240,16 +240,16 @@ export function health(store) {
   const strongest = [...active].sort((left, right) => right.strength - left.strength).slice(0, 5)
     .map(item => ({ id: item.id, title: item.title, strength: item.strength }))
   const advice = []
-  if (summary.items === 0) advice.push('memory is empty: keep using DSH, or say "记住…" / call mnemosyne_remember to seed it')
+  if (summary.items === 0) advice.push('记忆还是空的：继续用 DSH，或者说"记住…"，也可以调用 mnemosyne_remember 先存几条')
   if (summary.items > 0 && summary.reuseRate < 0.15) {
-    advice.push('most memories were never reused: they may be too specific; prefer general preferences and lessons')
+    advice.push('大多数记忆从没被复用：可能太具体了，多存一些通用的偏好和教训')
   }
-  if (forgotten.length > summary.items) advice.push('more memories are forgotten than active: raise halfLifeDays if that surprises you')
+  if (forgotten.length > summary.items) advice.push('被遗忘的比还活着的还多：如果不是你想要的，可以调大 halfLifeDays')
   if (tuning.behaviorFit < 0.4 && tuning.observations >= MIN_OBSERVATIONS) {
-    advice.push('recent injections did not fit: run mnemosyne_consolidate (preview: true) then tighten preferences')
+    advice.push('最近的注入不太贴合：先跑一次 mnemosyne_consolidate（preview 设为 true 看预览），再收紧偏好')
   }
   if (store.data.stats.conflicts > 0) {
-    advice.push(`${store.data.stats.conflicts} preference revision(s) recorded: later statements supersede earlier ones`)
+    advice.push(`记录了 ${store.data.stats.conflicts} 次偏好修订：后来的说法会取代先前的`)
   }
 
   return {

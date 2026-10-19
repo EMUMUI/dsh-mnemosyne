@@ -357,7 +357,7 @@ export class Store {
    * @param {string} reason
    * @returns {object}
    */
-  forgetItem(item, reason = 'manual') {
+  forgetItem(item, reason = '手动') {
     const now = this.now()
     if (!item.forgottenAt) this.data.stats.forgotten += 1
     item.forgottenAt = now
@@ -378,7 +378,7 @@ export class Store {
     delete item.forgottenReason
     item.strength = Math.max(0.3, round(Number(item.strength) || 0))
     item.refreshedAt = now
-    item.history.push({ at: now, type: 'restored', source: 'manual' })
+    item.history.push({ at: now, type: 'restored', source: '手动' })
     this.addEvent(now, 'restore', oneLine(item.title, 80))
     return this.touch()
   }
@@ -390,7 +390,7 @@ export class Store {
    * @param {string} reason
    * @returns {object}
    */
-  discardItem(item, reason = 'manual') {
+  discardItem(item, reason = '手动') {
     const now = this.now()
     item.discardedAt = now
     item.discardedReason = reason
@@ -461,11 +461,11 @@ export class Store {
       const lines = turns
         .map(entry => `- ${entry.oneLine}`)
         .slice(0, 40)
-      const content = `Session digest (${turns.length} turns, ${new Date(turns[0].at).toISOString().slice(0, 10)}`
-        + `${projects.length === 1 ? `, ${projects[0]}` : ''}):\n${lines.join('\n')}`
+      const content = `会话摘要（${turns.length} 轮，${new Date(turns[0].at).toISOString().slice(0, 10)}`
+        + `${projects.length === 1 ? `，${projects[0]}` : ''}）：\n${lines.join('\n')}`
       summary = this.remember('episodic', {
         content,
-        title: `Digest: ${oneLine(turns[turns.length - 1].oneLine, 50)}`,
+        title: `摘要：${oneLine(turns[turns.length - 1].oneLine, 50)}`,
         tags: ['digest'],
         source: 'consolidation',
         strength: 0.6 + Math.min(0.4, turns.length / 100),

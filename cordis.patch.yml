@@ -1,35 +1,35 @@
-# Mnemosyne — a DSH bundle layer.
+# Mnemosyne —— DSH 的一个 bundle 层。
 #
-# Every key below is optional; `src/config.js` owns the defaults and the
-# validation, so a bare install works out of the box. Uncomment a line only
-# when you want to change it. Patch layers replace a row's whole `config`, so
-# restate every key you override.
+# 下面每个配置项都是可选的；默认值与校验逻辑在 `src/config.js` 里，
+# 不写任何配置即可正常工作。只有想改动时才取消注释。
+# 注意：补丁层会整体替换某一行的 `config`，所以一旦要覆盖某些项，
+# 最好把你需要的项都写全。注释必须用 `#`，不能用 `//`。
 - insert:
     - id: mnemosyne
       name: 'dsh-mnemosyne'
       config:
-        # ── Where memory lives ──────────────────────────────────────────
-        # Default: ~/.dsh/mnemosyne/<profile>.json. Point this at any
-        # absolute path to keep several brains side by side.
+        # ── 记忆存在哪里 ────────────────────────────────────────────────
+        # 默认：~/.dsh/mnemosyne/<profile>.json。指向任意绝对路径即可
+        # 让多套记忆并存。
         # memoryFile: 'D:/brains/work.json'
         # baseDir: 'D:/brains'
         # profile: 'work'
 
-        # ── Learning ───────────────────────────────────────────────────
-        # autoLearn: true            # learn from every turn automatically
-        # learnAssistant: false      # also mine the assistant's replies
-        # minTurnChars: 4            # ignore one-word acknowledgements
-        # captureCommandTurns: false # treat "/cmd" turns as learnable text
-        # selfTuneEveryTurns: 25     # retune the decay model this often
-        # consolidateEveryTurns: 1   # how often to attempt a "sleep" cycle
+        # ── 学习 ────────────────────────────────────────────────────────
+        # autoLearn: true            # 是否从每轮对话自动学习
+        # learnAssistant: false      # 是否也学习助手的回复
+        # minTurnChars: 4            # 太短的"嗯/好的"不学习
+        # captureCommandTurns: false # 把 "/命令" 轮次当作可学习内容
+        # selfTuneEveryTurns: 25     # 每隔多少轮重新校准衰减模型
+        # consolidateEveryTurns: 1   # 多久尝试一次"睡眠"整合
         # autoConsolidateMinNewTurns: 10
-        # idleFlushMs: 20000         # idle-save debounce
+        # idleFlushMs: 20000         # 空闲落盘防抖
 
-        # ── What gets injected before each turn ────────────────────────
-        # workingSetMaxChars: 2200
-        # maxProfileEntries: 12      # standing preferences always carried
-        # recallMaxItems: 4          # relevant memories per turn
-        # recallMinScore: 2.6        # relevance gate (self-tuned upwards)
+        # ── 每轮注入什么 ────────────────────────────────────────────────
+        # workingSetMaxChars: 2200   # 注入长度上限（字符）
+        # maxProfileEntries: 12      # 长期偏好始终携带的条数
+        # recallMaxItems: 4          # 每轮最多注入几条相关记忆
+        # recallMinScore: 2.6        # 相关度门槛（会自我上调）
         # recallMinQueryChars: 4
         # injectRecentActivity: true
         # include:
@@ -38,21 +38,21 @@
         #   commands: true
         #   recent: true
 
-        # ── Forgetting ─────────────────────────────────────────────────
-        # halfLifeDays: 21           # 0 = never forget
-        # salienceFloor: 0.05        # below this a memory is forgotten
+        # ── 遗忘 ────────────────────────────────────────────────────────
+        # halfLifeDays: 21           # 基础半衰期；0 表示永不遗忘
+        # salienceFloor: 0.05        # 强度低于此值即被遗忘
         # maxEpisodic: 500
-        # keepForgottenDays: 180     # then the record itself is dropped
+        # keepForgottenDays: 180     # 之后彻底清掉留档
 
-        # ── Privacy ────────────────────────────────────────────────────
-        # User turn text is never persisted verbatim: memories keep a short
-        # excerpt. 'excerpt-free' stores a compacted one-liner instead.
+        # ── 隐私 ────────────────────────────────────────────────────────
+        # 默认永不原样保存用户原话：记忆里只留一段短摘录。
+        # 'excerpt-free' 改为保存压缩过的一句话。
         # privacyMode: 'excerpt'     # 'excerpt' | 'excerpt-free' | 'full'
         # excerptChars: 160
-        # redactSecrets: true        # strip tokens/keys before storing
+        # redactSecrets: true        # 入库前抹掉密钥
 
-        # ── Scope ──────────────────────────────────────────────────────
-        # perProjectPreferences: false
+        # ── 作用范围 ────────────────────────────────────────────────────
+        # perProjectPreferences: false  # 偏好是否按仓库隔离
 
-        # ── Diagnostics (stderr only) ──────────────────────────────────
+        # ── 诊断（只输出到 stderr）──────────────────────────────────────
         # debug: false

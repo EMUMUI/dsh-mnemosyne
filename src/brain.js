@@ -86,10 +86,10 @@ export class Brain {
     // Redact before anything is derived: titles, keys and tags are stored too,
     // and a derived title is just as replayable as the body.
     const content = redactSecretsIf(raw, this.config)
-    if (content === '') throw new Error('content must be a non-empty string')
+    if (content === '') throw new Error('content 不能为空')
     const requested = input.store ?? (input.kind === 'preference' ? 'semantic' : 'episodic')
     if (!STORE_ALIASES.has(requested) || requested === 'all') {
-      throw new Error(`store must be one of ${[...STORES].join(', ')}`)
+      throw new Error(`store 必须是以下之一：${[...STORES].join('、')}`)
     }
     const kind = input.kind ?? (requested === 'semantic' ? 'preference' : 'fact')
     const result = this.store.remember(requested, {
@@ -117,9 +117,9 @@ export class Brain {
    */
   recall(input) {
     const query = String(input.query ?? '').trim()
-    if (query === '') throw new Error('query must be a non-empty string')
+    if (query === '') throw new Error('query 不能为空')
     const store = input.store ?? 'all'
-    if (!STORE_ALIASES.has(store)) throw new Error(`store must be one of ${[...STORE_ALIASES].join(', ')}`)
+    if (!STORE_ALIASES.has(store)) throw new Error(`store 必须是以下之一：${[...STORE_ALIASES].join('、')}`)
     const hits = recallStored(this.store, query, {
       store,
       limit: input.limit ?? 8,
@@ -238,9 +238,9 @@ export class Brain {
         return this.list(input)
       case 'update': {
         const items = this.resolveMany(input.ids)
-        if (items.length === 0) return { action, ok: false, error: 'no unique memory matched the given id(s)' }
+        if (items.length === 0) return { action, ok: false, error: '没有唯一匹配到这些 id 的记忆' }
         const wantsChange = typeof input.content === 'string' || typeof input.pinned === 'boolean' || typeof input.salience === 'number'
-        if (!wantsChange) return { action, ok: false, error: 'update needs content, pinned or salience' }
+        if (!wantsChange) return { action, ok: false, error: '修改需要提供 content、pinned 或 salience 之一' }
         const changed = []
         for (const item of items) {
           if (typeof input.content === 'string' && input.content.trim() !== '') {
@@ -270,13 +270,13 @@ export class Brain {
       case 'forget':
       case 'remove': {
         const items = this.resolveMany(input.ids)
-        for (const item of items) this.store.forgetItem(item, input.reason ?? 'manual')
+        for (const item of items) this.store.forgetItem(item, input.reason ?? '手动')
         this.save()
-        return { action, ok: true, ids: items.map(item => item.id), note: 'soft-deleted; rebuild: mnemosyne_manage restore' }
+        return { action, ok: true, ids: items.map(item => item.id), note: '已遗忘（可恢复）：用 mnemosyne_forget 并设 restore 为 true 可找回' }
       }
       case 'discard': {
         const items = this.resolveMany(input.ids)
-        for (const item of items) this.store.discardItem(item, input.reason ?? 'manual')
+        for (const item of items) this.store.discardItem(item, input.reason ?? '手动')
         this.save()
         return { action, ok: true, ids: items.map(item => item.id) }
       }
