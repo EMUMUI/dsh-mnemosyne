@@ -80,6 +80,8 @@ export function emptyStore() {
     journal: [],
     events: [],
     tuning: defaultTuning(),
+    /** Character grown from use; every field is user-overridable. */
+    personality: { version: 1, traits: {}, challenges: [], decided: [], lastUpdateAt: 0 },
     stats: freshStats(),
   }
 }
@@ -607,6 +609,19 @@ export function migrate(parsed, warn = () => {}) {
   data.tuning = { ...defaultTuning(), ...(parsed.tuning ?? {}) }
   data.events = Array.isArray(parsed.events) ? parsed.events : []
   data.journal = Array.isArray(parsed.journal) ? parsed.journal : []
+  // Brain files written before the personality existed simply lack it; a
+  // partial or corrupt block is rebuilt rather than trusted, because a
+  // malformed trait would keep throwing on every turn.
+  const saved = parsed.personality
+  data.personality = saved !== null && typeof saved === 'object' && !Array.isArray(saved)
+    ? {
+        version: 1,
+        traits: saved.traits !== null && typeof saved.traits === 'object' && !Array.isArray(saved.traits) ? saved.traits : {},
+        challenges: Array.isArray(saved.challenges) ? saved.challenges : [],
+        decided: Array.isArray(saved.decided) ? saved.decided : [],
+        lastUpdateAt: Number(saved.lastUpdateAt) || 0,
+      }
+    : { ...fresh.personality }
   for (const store of STORES) {
     if (!Array.isArray(data[store])) data[store] = []
     data[store] = repairItems(store, data[store], warn)

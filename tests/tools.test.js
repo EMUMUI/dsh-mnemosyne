@@ -11,7 +11,7 @@ const run = (definition, args) => definition.execute(args, { agent: undefined, s
 test('tools: every tool is a valid ToolDefinition', () => {
   const { brain } = createBrainAt()
   const all = [...tools(brain).values()]
-  assert.equal(all.length, 10)
+  assert.equal(all.length, 12)
   for (const tool of all) {
     assert.match(tool.name, /^mnemosyne_[a-z]+$/)
     assert.ok(tool.description.length > 40, `${tool.name} needs a usable description`)
@@ -19,7 +19,7 @@ test('tools: every tool is a valid ToolDefinition', () => {
     assert.equal(typeof tool.output.render, 'function')
     assert.ok(tool.output.schema !== undefined)
   }
-  assert.equal(new Set(all.map(tool => tool.name)).size, 10, 'names are unique')
+  assert.equal(new Set(all.map(tool => tool.name)).size, 12, 'names are unique')
 })
 
 test('tools: remember defaults to a fact and derives the store from the kind', async () => {

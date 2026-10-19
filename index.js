@@ -175,6 +175,22 @@ export function apply(ctx, rawConfig) {
       order: 2900,
       text: systemSectionText(),
     }), 'mnemosyne: prompt section')
+
+    // The character is its own section and is read lazily every turn: it is
+    // empty until there is evidence, then grows without a restart.
+    if (config.growPersonality) {
+      promptCtx.effect(() => promptCtx.systemPrompt.section({
+        name: 'mnemosyne:character',
+        order: 2910,
+        text: () => {
+          try {
+            return brain.characterPrompt()
+          } catch {
+            return ''
+          }
+        },
+      }), 'mnemosyne: character section')
+    }
   })
 
   // Expose diagnostics to the loader log only when asked.

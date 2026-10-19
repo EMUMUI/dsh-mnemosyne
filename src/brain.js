@@ -8,6 +8,10 @@ import {
   noteOutcome, selfTune as tuneBrain, health as healthOf,
 } from './core/self.js'
 import { recall as recallStored, workingSet as buildWorkingSet } from './core/recall.js'
+import {
+  character as characterOf, detectsTraitRequest, learnCharacter, manage as personalityManage,
+  renderCharacter,
+} from './core/personality.js'
 import { loadStore, retentionOf, STORES } from './core/store.js'
 import { clip, oneLine, redactSecrets, salience } from './core/text.js'
 import { subjectOf } from './core/patterns.js'
@@ -185,6 +189,49 @@ export class Brain {
     const result = noteOutcome(this.store, outcome)
     if (result.changed) this.save()
     return result
+  }
+
+  /**
+   * Fold one reply into the growing character, and act on an explicit request
+   * for a trait ("以后直接说").
+   * @param {{ kind: string, challenge?: object|null, text?: string }} reply
+   * @returns {{ changes: object[], asked?: object|null }}
+   */
+  learnCharacter(reply) {
+    const result = learnCharacter(this.store, reply)
+    const asked = detectsTraitRequest(reply.text ?? '')
+    let requested = null
+    if (asked !== null) {
+      // An explicit request is the user speaking, not the character growing, so
+      // it is applied immediately and marked as user-owned.
+      requested = personalityManage(this.store, { action: 'set', key: asked.key, state: 'wanted', value: 0.8 })
+    }
+    if (result.changes.length > 0 || requested !== null) this.save()
+    return { changes: result.changes, asked: requested }
+  }
+
+  /**
+   * The grown character, with each trait's owner spelled out.
+   * @returns {object}
+   */
+  character() {
+    return characterOf(this.store)
+  }
+
+  /**
+   * The user's own levers over the character.
+   * @param {{ action: 'set'|'erase'|'decide', key?: string, value?: number, state?: string, topic?: string }} input
+   * @returns {object}
+   */
+  manageCharacter(input) {
+    const result = personalityManage(this.store, input)
+    if (result.ok) this.save()
+    return result
+  }
+
+  /** The system-prompt section for the character, or '' before it exists. */
+  characterPrompt() {
+    return renderCharacter(this.store)
   }
 
   /**

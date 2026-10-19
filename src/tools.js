@@ -53,6 +53,8 @@ export function buildTools(brain, options = {}) {
     sessionsTool(brain),
     commandsTool(brain),
     statsTool(brain),
+    challengeTool(brain),
+    personalityTool(brain),
   ]
 }
 
@@ -386,6 +388,99 @@ function commandsTool(brain) {
     async execute(args) {
       const matches = brain.commands({ goal: args.goal, limit: args.limit })
       return { matches }
+    },
+  })
+}
+
+/**
+ * Put an objection to the user instead of acting on it.
+ * @param {import('./brain.js').Brain} brain
+ */
+function challengeTool(brain) {
+  return defineTool({
+    name: 'mnemosyne_challenge',
+    description: [
+      '在动手之前，把你的异议摆到用户面前，请他裁决。',
+      '适用：用户的前提可能有问题（数据来源、事实判断、方案假设）、你觉得他会事后后悔、',
+      '或者你怀疑自己关于上文某处记错或编造了什么。',
+      '不要用：纯粹的风格偏好、用户明确要求不要争论的事、以及你其实没有具体理由的时候。',
+      '用法：先说清你担心什么，再问一句是否继续。用户回答后，他的决定会被记下来，',
+      '你的性格成长不会再覆盖它——所以不要反复劝同一件事。',
+    ].join(''),
+    parameters: {
+      topic: { type: 'string', required: true, description: '你担心什么，一句话说清（会记下来供以后参考）。' },
+      subject: { type: 'string', description: '涉及的记忆 id 或主题（可选），用于把这次异议关联到具体记忆。' },
+      evidence: { type: 'string', description: '你的依据是什么（可选）。不要编造依据。' },
+    },
+    output: {
+      schema: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          recorded: { type: 'boolean' },
+          topic: { type: 'string' },
+          asked: { type: 'string' },
+          pastDecisions: { type: 'array', items: { type: 'json' } },
+        },
+      },
+      render: (_args, value) => json(value),
+    },
+    async execute(args, exec) {
+      const topic = String(args.topic ?? '').trim()
+      if (topic === '') throw new Error('topic 不能为空')
+      const challenge = { topic, subject: String(args.subject ?? ''), evidence: String(args.evidence ?? ''), trait: 'skepticism' }
+      // The host reads this when the turn ends, so the user's answer can be
+      // attributed to this objection instead of to a generic correction.
+      const state = exec?.state
+      if (state !== undefined && state !== null) state.pendingChallenge = challenge
+      const past = brain.character().decided.filter(entry => entry.topic !== '').slice(-3)
+      return {
+        recorded: true,
+        topic,
+        asked: '把异议告诉用户，问一句是否继续；不要自行替他决定。',
+        pastDecisions: past,
+      }
+    },
+  })
+}
+
+/**
+ * The user's controls over the grown character.
+ * @param {import('./brain.js').Brain} brain
+ */
+function personalityTool(brain) {
+  return defineTool({
+    name: 'mnemosyne_personality',
+    description: [
+      '查看和管理这个助手的性格：它从长期使用中养成了哪些倾向、每个维度由谁决定。',
+      'action 为 show（默认，只读）：列出各维度当前的强度、证据数与归属。',
+      'action 为 set：把某一维度调到指定强度，或锁定/交给成长（state 取 learned、wanted、locked）。',
+      'action 为 erase：把某一维度恢复为出厂状态，忘掉所有学习结果。',
+      'action 为 decide：把用户的最终裁决记下来，性格成长永远不会覆盖它。',
+      '维度：directness 直言、caution 谨慎、skepticism 质疑、depth 深究、brevity 精简、warmth 亲和、initiative 主动。',
+    ].join(''),
+    parameters: {
+      action: { type: 'string', enum: ['show', 'set', 'erase', 'decide'], description: '要做什么，默认 show。' },
+      key: { type: 'string', description: '性格维度名，如 skepticism。set 和 erase 必填。' },
+      value: { type: 'number', description: '0 到 1 之间的强度，set 时可选。' },
+      state: { type: 'string', enum: ['learned', 'wanted', 'locked', 'decided'], description: '归属：learned 随成长（默认）、wanted 你要求、locked 锁定、decided 已裁决。' },
+      topic: { type: 'string', description: 'decide 时记录的决定内容。' },
+    },
+    output: {
+      schema: { type: 'object', additionalProperties: false, properties: { result: { type: 'json' } } },
+      render: (_args, value) => json(value),
+    },
+    async execute(args) {
+      const action = String(args.action ?? 'show')
+      if (action === 'show') return { result: brain.character() }
+      const result = brain.manageCharacter({
+        action,
+        key: args.key,
+        value: typeof args.value === 'number' ? args.value : undefined,
+        state: args.state,
+        topic: args.topic,
+      })
+      return { result: result.ok ? { ...result, character: brain.character() } : result }
     },
   })
 }

@@ -126,5 +126,10 @@ test('i18n: self-tuning changes and health advice are Chinese', async () => {
   for (const line of [...(tuned.changes ?? []), ...(tuned.advice ?? [])]) {
     assert.ok(!looksEnglish(line), `英文调参记录：${line}`)
   }
+  // The character reaches the prompt, so its wording is user-facing too.
+  for (const entry of brain.character().traits) {
+    assert.ok(!looksEnglish(entry.stance), `英文性格描述：${entry.stance}`)
+    assert.ok(!looksEnglish(entry.owner), `英文归属：${entry.owner}`)
+  }
   void now
 })

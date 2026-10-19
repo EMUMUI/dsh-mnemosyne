@@ -22,6 +22,8 @@ export const DEFAULTS = Object.freeze({
   autoConsolidateMinNewTurns: 10,
   idleFlushMs: 20_000,
   selfTuneEveryTurns: 25,
+  /** Whether the assistant's own character may grow from use. */
+  growPersonality: true,
   workingSetMaxChars: 2200,
   recallMaxItems: 4,
   recallMinScore: 2.6,
@@ -59,7 +61,7 @@ const NUMERIC_RANGES = {
 
 const BOOLEAN_FIELDS = [
   'autoLearn', 'learnAssistant', 'captureCommandTurns', 'injectRecentActivity', 'redactSecrets',
-  'perProjectPreferences', 'debug',
+  'perProjectPreferences', 'debug', 'growPersonality',
 ]
 
 const PRIVACY_MODES = new Set(['excerpt', 'excerpt-free', 'full'])

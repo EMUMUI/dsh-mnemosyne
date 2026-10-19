@@ -74,6 +74,29 @@ if (pinned.length > 0) {
   for (const item of pinned.slice(0, 10)) console.log(`  · ${item.title}`)
 }
 
+const traits = data.personality?.traits ?? {}
+const shown = Object.entries(traits).filter(([, trait]) => (trait.evidence ?? 0) > 0 || trait.state !== 'learned')
+if (shown.length > 0) {
+  console.log('')
+  console.log('性格（随使用形成，可以用 mnemosyne_personality 调整）:')
+  for (const [key, trait] of shown) {
+    const owner = trait.state === 'locked' ? '你已锁定'
+      : trait.state === 'decided' ? '你已裁决'
+        : trait.state === 'wanted' ? '你指定要' : '自己长的'
+    const bar = '█'.repeat(Math.round(trait.value * 10)).padEnd(10, '·')
+    console.log(`  ${key.padEnd(12)} ${bar} ${trait.value.toFixed(2)}  ${owner}（${trait.evidence} 次证据）`)
+  }
+}
+
+const decided = data.personality?.decided ?? []
+if (decided.length > 0) {
+  console.log('')
+  console.log('你拍板过的事（成长不会覆盖）:')
+  for (const entry of decided.slice(-5).reverse()) {
+    console.log(`  · ${entry.topic || '（未记录内容）'}`)
+  }
+}
+
 if (active.length > 0) {
   console.log('')
   console.log('最近记住的:')
